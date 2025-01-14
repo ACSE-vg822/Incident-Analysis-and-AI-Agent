@@ -20,7 +20,7 @@ Summary,Impact,Detection,Timeline,Conclusions,Actionables,Date,Component,Symptom
 
 {{#ifeq:{{SUBPAGENAME}}|Report Template||
 [[Category:Incident documentation]]
-}}",2019-08-02,Api,Unknown,Mediawiki,Unknown,Unknown,2019-08-02_api-overload-parsoid.wikitext
+}}",2019-08-02,Api,Unknown,Mediawiki,Unknown,Api,2019-08-02_api-overload-parsoid.wikitext
 "Table '''wb_terms''' in '''wikidatawiki''' that provides labels and description lookup of entities (but also getting labels and description of entities; works both ways) is being replaced by a set normalized tables we call '''TermStore'''. Part of '''TermStore''', is a class called <code>DatabaseTermIdsResolver</code>, picked up the right host for retrieving wikidata data in client wikis (including '''cawiki''') but didn't use the right db name -<code>wikidatawiki</code>- thus code was trying to get information from wrong database  -<code>cawiki</code>-. [https://gerrit.wikimedia.org/r/c/mediawiki/extensions/Wikibase/+/529113/1/client/includes/WikibaseClient.php The patch that fixes the issue] gives more in-depth information on it. It was deployed five hours earlier on client wikis (The patch that enabled it on client wiki is [https://gerrit.wikimedia.org/r/c/operations/mediawiki-config/+/527087 527087]) then after caches got invalidated and started to use the new store.",Some pages on '''cawiki''' were returning a 500 error due to failing to connect to the database. It potentially impacted all non-wikidata wikis but '''cawiki''' and '''ruwiki''' use wikidata extensively enough for this to cause issues (retrieving property term data is not very commons in client wikis),"We got the alert on IRC: <br>
  PROBLEM - MediaWiki exceptions and fatals per minute on graphite1004 is CRITICAL: CRITICAL: 90.00% of data above the critical threshold [50.0]","'''All times in UTC.'''
 
@@ -85,7 +85,7 @@ https://grafana.wikimedia.org/d/000000479/frontend-traffic?panelId=2&fullscreen&
 
 {{#ifeq:{{SUBPAGENAME}}|Report Template||
 [[Category:Incident documentation]]
-}}",2019-08-23,Unknown,Unknown,Unknown,Unknown,Unknown,2019-08-23_network_codfw.wikitext
+}}",2019-08-23,Unknown,Unknown,Unknown,Unknown,Network,2019-08-23_network_codfw.wikitext
 "Kubernetes API server process failed to start, causing the collapse of many Kubernetes managed services and disabling launching or managing of containers for tools while the server was down.
 
 Toolforge Kubernetes API services were down for several hours due to puppet changes that caused a CA certificate mismatch with the etcd servers.  Since it was precipitated by a restart of the service, the root cause took significant time to find and correct.  While it was down, Toolforge webservices using Kubernetes would fail to launch or restart and likely many services failed while the API server was not responding.","Toolforge Kubernetes API server was unresponsive which caused the cluster to appear completely down for all monitoring and use purposes. Users of Toolforge could not launch tools with the <code>webservice</code> command with the kubernetes backend or use kubectl to check status or manipulate their tools. A larger impact was caused when kube2proxy was unable to watch for Kubernetes changes.  It then ""started from scratch"" and crashed.  Since prometheus shows that the containers (and thus the tools themselves) were unimpacted, this seems to have taken all Kubernetes webservices offline at the proxy level.",The first notice was icinga alerting on the check against http://checker.tools.wmflabs.org/k8s/nodes/ready was our first notice.,"<!-- Tips/Reminders:
@@ -431,7 +431,7 @@ The issue was a combination of several factors we never saw in any test or dev e
 
 {{#ifeq:{{SUBPAGENAME}}|Report Template||
 [[Category:Incident documentation]]
-}}",2019-12-10,Unknown,Unknown,Unknown,Unknown,Unknown,2019-12-10_Cite.wikitext
+}}",2019-12-10,Unknown,Unknown,Unknown,Unknown,Api,2019-12-10_Cite.wikitext
 "On 2019-12-10, mainly between 22:26 and 22:39 UTC (but there were other smaller instances in the previous hour), Common wiki database replicas were lagging behind, causing slowdown, returning stale results, errors and, as a consequence of the original bug, category counts were updated incorrectly.","The user-noticeable impact was directly felt on Commons for a few minutes due to articles being removed from <code>Category:11</code>. However, the bug was present production on the following wikis during the given dates:
 
 * testwiki: 2019-11-26 19:06 to 2019-12-10 21:16
@@ -991,7 +991,7 @@ We later learned thanks to Brad, that parsercache has a ""double write"" behavio
 
 {{#ifeq:{{SUBPAGENAME}}|Report Template||
 [[Category:Incident documentation]]
-}}",2020-03-19,Server,Unknown,Mediawiki,Unknown,Unknown,2020-03-19_parsercache.wikitext
+}}",2020-03-19,Server,Unknown,Mediawiki,Unknown,Hardware,2020-03-19_parsercache.wikitext
 "Unexpected loss of internal connectivity to codfw hosts and services for 5 minutes, creating user-visible failed queries for users whose traffic hits our eqsin and ulsfo edges, when they were using services that are active/active (Swift, Maps, Restbase API, ...)
 
 Cause was [[phab:T248394|maintenance]] that required a linecard restart on cr1-codfw, which exposed a flaw in codfw's network design.
@@ -1296,7 +1296,7 @@ We did see traces of issues on the idrac's error log, if we could alert on those
 * [DONE] Failover db1138 to its candidate master (scheduled for Friday 29th at 05:00 AM UTC): https://phabricator.wikimedia.org/T253808
 * [DONE] Replace failed DIMM on that host: https://phabricator.wikimedia.org/T253808
 * Alert on ECC warnings in SEL https://phabricator.wikimedia.org/T253810
-* Create a script to move replicas between hosts when the master isn't available https://phabricator.wikimedia.org/T196366",2020-05-28,Unknown,Unknown,Unknown,Unknown,Unknown,2020-05-28_commons_read-only.wikitext
+* Create a script to move replicas between hosts when the master isn't available https://phabricator.wikimedia.org/T196366",2020-05-28,Unknown,Unknown,Unknown,Unknown,Hardware,2020-05-28_commons_read-only.wikitext
 "A change was deployed to puppet which inadvertently deleted the private repo from all puppet backend servers and puppet standalone servers.  A few standalone servers in the Cloud environment maintain secrets by applying local commits to the labs/private repo.  This event caused all secrets to be deleted required manual restoration
 
 '''Impact''': Any cloud environments which had added private secrets would have reverted to using the dummy secrets in the labs/private repo
@@ -1503,7 +1503,7 @@ This caused the router to reboot into its second disk, containing only a factory
 Monday 06
 * ~07:40 Router is brought back up on its backup disk '''Redundancy restored'''","* This outage showed that our hardware redundancy and failover are solid
 * Juniper recently introduced a new feature: <code>vmhost snapshot</code> that would have prevented the lack of redundancy (but not the crash itself)","* cr3-eqsin disk 1 failure - https://phabricator.wikimedia.org/T257154
-* Investigate Junos vmhost snapshot - https://phabricator.wikimedia.org/T257153",2020-07-05,Unknown,Monitoring,Unknown,Unknown,Unknown,2020-07-05_eqsin-router-crash.wikitext
+* Investigate Junos vmhost snapshot - https://phabricator.wikimedia.org/T257153",2020-07-05,Unknown,Monitoring,Unknown,Unknown,Hardware,2020-07-05_eqsin-router-crash.wikitext
 "With the introduction of a number of changes to make HTTPS redirects unconditional<ref>https://phabricator.wikimedia.org/T256095</ref>, the the MediaWiki API virtual hosts returned a HTTP 302 redirect to the HTTPS edge (e.g. external) address for every request that doesn't include the <code>X-Forwarded-Proto: https</code><ref>https://en.wikipedia.org/wiki/X-Forwarded-For</ref> header. For instance a request to <code><nowiki>http://api-ro.discovery.wmnet</nowiki></code>  would return a 302 to  <code>Location: <nowiki>https://www.wikidata.org/w/index.php</nowiki></code>
 
 This made some [[Termbox]] and [[Wikifeeds]] requests run into timeouts, because traffic towards MediaWiki via our edge (egress) is not allowed from the Kubernetes Clusters.
@@ -1781,7 +1781,7 @@ Looking for that that same IP on the existing binlogs on an affected replica (bi
 
 Option 2 for this crash would imply that MW somehow introduced that inconsistency with an unsafe statement like INSERT IGNORE, however, it is difficult to know why only a few hosts failed.","* Investigate the deeper causes of the incident. [https://phabricator.wikimedia.org/T263842 T263842]. Deeper causes still unknown. {{done}}
 * Automatic and continuous data checks (at least for the most important/big tables) [https://phabricator.wikimedia.org/T207253 T207253]
-* Re-evaluate the use of ''INSERT IGNORE'' on ''ipblocks'' [https://phabricator.wikimedia.org/T264701 T264701]",2020-09-25,Unknown,Monitoring,Unknown,Unknown,Unknown,2020-09-25_s5_replication_lag.wikitext
+* Re-evaluate the use of ''INSERT IGNORE'' on ''ipblocks'' [https://phabricator.wikimedia.org/T264701 T264701]",2020-09-25,Unknown,Monitoring,Unknown,Unknown,Database,2020-09-25_s5_replication_lag.wikitext
 "Sensitive credentials (authentication tokens) were leaked via publicly accessible, memcached servers, on a default port & without authentication.
 Tokens can be used to escalate privileges and (at least) “bump quotas, create and destroy” arbitrary VMs in Cloud VPS/Toolforge. While the service runs in the “production” realm, no escalation paths to other production services and hosts are known so far.
 
@@ -2146,7 +2146,7 @@ Several other services were switched over from Codfw to Eqiad: Maps Tile Service
 *Avoid using the same switch to get traffic from a row on the primary and secondary load balancers. https://phabricator.wikimedia.org/T286879
 *Fix Pybal IPVS diff check https://phabricator.wikimedia.org/T286913
 * Fix depool threshold for text & upload edge caching services https://gerrit.wikimedia.org/r/c/operations/puppet/+/705381
-*Fix depool threshold for mw api service https://gerrit.wikimedia.org/r/c/operations/puppet/+/708072",2021-07-16,Unknown,Monitoring,Logging,Unknown,Unknown,2021-07-16_asw-a2-codfw_network.wikitext
+*Fix depool threshold for mw api service https://gerrit.wikimedia.org/r/c/operations/puppet/+/708072",2021-07-16,Unknown,Monitoring,Logging,Unknown,Network,2021-07-16_asw-a2-codfw_network.wikitext
 "[[File:Errors during 2021-07-26 DPL outage.png|thumb|Spikes in 503 errors returned to users]]
 [[File:Overall traffic during 2021-07-26 DPL outage.png|thumb|Corresponding graphs of traffic during the outage, showing approximately 15% of requests receiving errors.]]
 Following a large bot import to the Russian Wikinews, expanding the size of that project to 13 million pages, slow queries originating from ruwikinews's usage of the [[mw:Extension:DynamicPageList (Wikimedia)|DynamicPageList extension]]  (also known as ""[[git:mediawiki/extensions/intersection|intersection]]"") overloaded the s3 cluster of databases, causing php-fpm processes to hang/stall, eventually taking down all wikis with it. The outage was resolved by disabling the DynamicPageList extension on ruwikinews and aggressively killing queries on s3 replicas. Normally, DPL's database queries roughly scale to the size of the smallest category being intersected. This would be bad enough, as ruwikinews has categories that are orders of magnitude higher than other wikis with this extension. However, in this case MariaDB chose a query plan that involved scanning the entire categorylinks table. The query in question seen during the outage took more than 3 minutes to finish on an idle replica.
@@ -2272,7 +2272,7 @@ Metrics related to the above time window: https://grafana.wikimedia.org/d/lxZAdA
 
 Wikifeeds tls-proxy (envoy) logs related to the above time window: https://logstash.wikimedia.org/goto/22555b41f9b7bbd2829081a041d76bb2","The main pain point was surely to identify what systems are involved in handling a request for the Wikifeeds API, and how to reproduce one error case. The documentation on Wikitech is good but generic, and there were some important details that not all SREs involved had clear in mind (one above all, the fact that a Wikifeeds request involves Restbase, Wikifeeds on Kubernetes, and possibly again Restbase to fetch some auxiliary data). Due to the unlucky circumstances (weekend plus US holiday) there were fewer SREs available to work on the problem, and it was not clear if it was worth a page or not. This situation will probably get better when we'll introduce SLOs and more formal on-call process.","* Add (more) documentation to the Wikifeeds Wikitech page to describe what is the relationship between Restbase, Wikifeeds and its tls-proxy container. [[phab:T291912|T291912]]
 *Increase the capacity for wikifeeds [[phab:T291914|T291914]]
-*Originally, it was deemed as a worthy actionable to find a way to reproduce the Envoy inconsistent state, or check if there is already literature/links/etc.. about it. However, since this was related to the greatly increased end-user traffic levels and since the incident review and investigation did not manage to reveal signs of envoy having an inconsistent state, this should not happen",2021-09-06,Unknown,Unknown,Unknown,Unknown,Unknown,2021-09-06_Wikifeeds.wikitext
+*Originally, it was deemed as a worthy actionable to find a way to reproduce the Envoy inconsistent state, or check if there is already literature/links/etc.. about it. However, since this was related to the greatly increased end-user traffic levels and since the incident review and investigation did not manage to reveal signs of envoy having an inconsistent state, this should not happen",2021-09-06,Unknown,Unknown,Unknown,Unknown,Api,2021-09-06_Wikifeeds.wikitext
 "[[File:Cp3065-no-threads.png|thumb|Varnish on cp3065 running out of work threads]]
 [[File:Cp3053-ats-be-connections.png|thumb|Thousands of connections established on ats-be@cp3053]]
 On 2021-09-12 starting at 18:13 UTC, the cache upload cluster at esams (upload-lb.esams.wikimedia.org) was affected by an outage that was the result of a large image being hotlinked by what appears to be multiple Romanian news organization judging from HTTP referer values. The sudden surge in traffic was sent to a single ATS backend instance, [https://grafana.wikimedia.org/d/6uhkG6OZk/ats-instance-drilldown?viewPanel=66&orgId=1&from=1631468644595&to=1631474529640&var-site=esams%20prometheus%2Fops&var-instance=cp3053&var-layer=backend saturating the 10G NIC of the host between 18:06 and 18:08] and later triggering an anomalous behavior on 5 Varnish frontend instances in esams out of 8. The behavior consisted in the establishment of [https://grafana.wikimedia.org/d/wiU3SdEWk/cache-host-drilldown?viewPanel=100&orgId=1&from=1631468644595&to=1631474529640&var-site=esams%20prometheus%2Fops&var-instance=cp3055 thousands of connections] from all affected Varnish instances to a single cache backend. 
@@ -2306,7 +2306,7 @@ Between 18:13 and 18:37, a high number of web requests against the upload cache 
 
 {{#ifeq:{{SUBPAGENAME}}|Report Template||
 [[Category:Incident documentation]]
-}}",2021-09-12,Unknown,Unknown,Unknown,Unknown,Unknown,2021-09-12_Esams_upload.wikitext
+}}",2021-09-12,Unknown,Unknown,Unknown,Unknown,Network,2021-09-12_Esams_upload.wikitext
 "Applying a change to our cirrus elasticsearch systemd unit triggered puppet to automatically restart the associated elasticsearch services. Sufficient number of hosts (6) were having puppet-agent ran simultaneously to drop the cluster into yellow and then red status; the large bandwidth/resources required to reschedule and assign shards when the respective elasticsearch services came back up on each host likely contributed to general cluster instability leading to a cascading failure scenario.
 
 Elasticsearch itself did its job in coming back and immediately recovering shards, but given the volume of hosts restarted, it took about 40 minutes for the impact to users to become largely invisible, and 2 hours and 5 minutes for a full recovery of the backend (i.e. green cluster status).
@@ -2503,7 +2503,7 @@ In addition, procedural weaknesses were exposed in flagging potentially ""risky"
 
 Process changes  (<mark>TODO: Phab ticket (??) Add   [[phab:project/view/4758/|#Sustainability (Incident Followup)]] )</mark>
 
-* Revise communication protocols based on the current expectations of communication medium of WMF employees. For example, if product engineers are required to be available on IRC, that should be communicated broadly. If that's not a requirement, we should perhaps use email/Phabricator as primary communication",2021-11-05,Unknown,Monitoring,Wikidata,Unknown,Unknown,2021-11-05_TOC_language_converter.wikitext
+* Revise communication protocols based on the current expectations of communication medium of WMF employees. For example, if product engineers are required to be available on IRC, that should be communicated broadly. If that's not a requirement, we should perhaps use email/Phabricator as primary communication",2021-11-05,Unknown,Monitoring,Wikidata,Unknown,Cache,2021-11-05_TOC_language_converter.wikitext
 "The metadata is aimed at helping provide a quick snapshot of context around what happened during the incident.
 {| class=""wikitable""
 |'''Incident ID''' 
@@ -3712,7 +3712,7 @@ As hinted-handoff is an only an optimization, we should focus instead on sizing 
 In the current example, hint storage is quite small (~3G after space for commitlog), and we should consider provisioning more for future clusters to make them less sensitive to this sort of event.  However since we'll never size them large enough to rule it out, and since this is a first occurrence, it is probably not worth taking action to retrofit.","*[[phab:T315517|T315517]] Create (and document) a process for disabling hinted-handoff during maintenance events
 *[[phab:T315517|T315517]] Create (and document) a process for truncating hinted-handoff 
 *[[phab:T315517|T315517]] Ensure that future clusters have a dedicated storage volume for hinted-handoff
-*[[phab:T315517|T315517]] Establish (and document) best practice for sizing of hinted-handoff volumes",2022-08-10,Unknown,Unknown,Unknown,Downtime,Unknown,2022-08-10_cassandra_disk_space.wikitext
+*[[phab:T315517|T315517]] Establish (and document) best practice for sizing of hinted-handoff volumes",2022-08-10,Unknown,Unknown,Unknown,Downtime,Storage,2022-08-10_cassandra_disk_space.wikitext
 "{{Incident scorecard
 | task = T313825
 | paged-num = 0
@@ -4401,7 +4401,7 @@ The synchronization occurred in <code>#wikimedia-operations</code>. Some specifi
 * {{phabricator|T323754}} Investigate why the H2 database files are so large
 * <s>Document the new partition layout?</s> (partition to be removed after data get moved)
 * Check with SRE collab about the partitioning scheme on gerrit1001 since the root partition is not LVM managed.
-* 2022-12-16 wrote a blog post [https://phabricator.wikimedia.org/J300 Phame > Doing the needful > Shrinking H2 database files]",2022-11-17,Unknown,Unknown,Unknown,Unknown,Unknown,2022-11-17_Gerrit_3.5_upgrade.wikitext
+* 2022-12-16 wrote a blog post [https://phabricator.wikimedia.org/J300 Phame > Doing the needful > Shrinking H2 database files]",2022-11-17,Unknown,Unknown,Unknown,Unknown,Database,2022-11-17_Gerrit_3.5_upgrade.wikitext
 "{{Incident scorecard
 | task = T323620
 | paged-num = 3
@@ -4507,7 +4507,7 @@ The appropriate alerts fired, and contained enough actionable information for hu
 * Resolution was very quick thanks to helmfile deployment","* CR Bumping the number of replicas https://gerrit.wikimedia.org/r/c/operations/deployment-charts/+/866612
 * CR Reverting the logging increase https://gerrit.wikimedia.org/r/c/mediawiki/core/+/864722
 * CR Reverting the replica increase https://gerrit.wikimedia.org/r/c/operations/deployment-charts/+/867597
-* An investigation into uneven load-balancing may be warranted https://phabricator.wikimedia.org/T325068",2022-12-09,Unknown,Monitoring,Api,Unknown,Unknown,2022-12-09_api_appserver_worker_starvation.wikitext
+* An investigation into uneven load-balancing may be warranted https://phabricator.wikimedia.org/T325068",2022-12-09,Unknown,Monitoring,Api,Unknown,Api,2022-12-09_api_appserver_worker_starvation.wikitext
 "{{Incident scorecard
 | task = T324801
 | paged-num = 14
@@ -6171,7 +6171,7 @@ The issue was escalated to the DRI.","''All times in UTC.''
 
 <mark>Create a list of action items that will help prevent this from happening again as much as possible. Link to or create a Phabricator task for every step.</mark>
 
-<mark>Add the [[phab:project/view/4758/|#Sustainability (Incident Followup)]] and the [[phab:project/profile/4626/|#SRE-OnFire]]  Phabricator tag to these tasks.</mark>",2023-09-20,Unknown,Unknown,Unknown,Unknown,Unknown,2023-09-20_mw-page-content-change-enrich.wikitext
+<mark>Add the [[phab:project/view/4758/|#Sustainability (Incident Followup)]] and the [[phab:project/profile/4626/|#SRE-OnFire]]  Phabricator tag to these tasks.</mark>",2023-09-20,Unknown,Unknown,Unknown,Unknown,Network,2023-09-20_mw-page-content-change-enrich.wikitext
 "{{Incident scorecard
 | task = T347481
 | paged-num = 0
@@ -6507,7 +6507,7 @@ We also got five separate non-paging JobUnavailable alerts for etcd-mirror, at 1
 * Wikitech documentation on etcd and etcd-mirror, along with etcd's own documentation, gave us most of what we needed to root-cause and work around the problem.
 * Manually advancing the index value was both feasible to do (because of the expressive REST API allowing us to modify the replication state) and an effective resolution (in part because there were less than 2,000 total unreplicated events, meaning we could advance to an available state with confidence that we weren't losing any data).","* Long-term solution: Switch conftool from etcd v2 to v3. As part of this effort, etcd-mirror will be replaced with an alternative solution for cross-site replication, a requirement for which is resilience to this class of problem. ([[phab:T350565|T350565]])
 * In the meantime, consider building the recovery described at https://etcd.io/docs/v2.3/api/#watch-from-cleared-event-index into etcd-mirror, so that it can detect and handle this situation automatically. It may or may not be worth the engineering effort, depending on the timeline for moving to v3, but now that there's much more traffic to etcd keys outside of /conftool (notably because of Spicerack locking) this situation is more likely than it used to be, so we may want to be resilient to it even in the short term. Alternatively, we could replicate the entire keyspace and not just /conftool, if etcd-mirror can sustain the load. ([[phab:T358636|T358636]])
-* Update [[Etcd/Main cluster#Replication]] documentation with safe restart conditions and information. Populate the ""TODO"" playbook link for EtcdReplicationDown in the process. ([[phab:T317537|T317537]])",2024-02-28,Unknown,Unknown,Unknown,Unknown,Unknown,2024-02-28_etcd-mirror.wikitext
+* Update [[Etcd/Main cluster#Replication]] documentation with safe restart conditions and information. Populate the ""TODO"" playbook link for EtcdReplicationDown in the process. ([[phab:T317537|T317537]])",2024-02-28,Unknown,Unknown,Unknown,Unknown,Api,2024-02-28_etcd-mirror.wikitext
 "{{Incident scorecard
 | task = T361288
 | paged-num = 0
@@ -6687,7 +6687,7 @@ FIRING: ProbeDown: Service kubemaster1002:6443 has failed probes
 * Poke otelcol upstream about using the Kubelet /pods interface  {{Done}}  https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/14475#issuecomment-2145825911 
 * Investigate whether the resolution of https://grafana.wikimedia.org/d/000000377/host-overview?orgId=1&refresh=5m&viewPanel=3 can be 1/1 instead of 1/3?
 
-<mark>Add the [[phab:project/view/4758/|#Sustainability (Incident Followup)]] and the [[phab:project/profile/4626/|#SRE-OnFire]]  Phabricator tag to these tasks.</mark>",2024-05-28,Unknown,Unknown,Unknown,Unknown,Load balancing,2024-05-28_wikikube-api.wikitext
+<mark>Add the [[phab:project/view/4758/|#Sustainability (Incident Followup)]] and the [[phab:project/profile/4626/|#SRE-OnFire]]  Phabricator tag to these tasks.</mark>",2024-05-28,Unknown,Unknown,Unknown,Unknown,Api,2024-05-28_wikikube-api.wikitext
 "{{Incident scorecard
 | paged-num = 2
 | responders-num = 7
@@ -6808,7 +6808,7 @@ The initial alerts located the issue well, although they were followed by a high
 
 <mark>Create a list of action items that will help prevent this from happening again as much as possible. Link to or create a Phabricator task for every step.</mark>
 
-<mark>Add the [[phab:project/view/4758/|#Sustainability (Incident Followup)]] and the [[phab:project/profile/4626/|#SRE-OnFire]]  Phabricator tag to these tasks.</mark>",2024-06-11,Unknown,Unknown,Unknown,Unknown,Unknown,2024-06-11_WMCS_Ceph.wikitext
+<mark>Add the [[phab:project/view/4758/|#Sustainability (Incident Followup)]] and the [[phab:project/profile/4626/|#SRE-OnFire]]  Phabricator tag to these tasks.</mark>",2024-06-11,Unknown,Unknown,Unknown,Unknown,Network,2024-06-11_WMCS_Ceph.wikitext
 "{{Incident scorecard
 | task = T367348
 | paged-num = N/A

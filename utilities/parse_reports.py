@@ -94,11 +94,10 @@ class ReportParser:
         """Extract root cause category."""
         for section in ['Conclusions', 'Impact']:
             if data.get(section):
-                keywords = ['API overload','database errors','monitoring failure','network issues','provider outage','load balancing',
-                            'configuration issues', 'network issue', 'database failure', 'traffic surge',
+                keywords = ['API','network','connectivity','network','DNS','load balancing',
+                            'configuration issues', 'network issue', 'database', 'traffic surge',
                             'software bug', 'resource exhaustion', 'authentication error', 
-                            'hardware failure', 'security breach', 'cache miss', 'software bugs' , 'storage issues',
-                            'hardware failures']
+                            'hardware', 'security', 'cache','storage', 'hardware', 'DNS', 'provider']
                 result = self._extract_keyword(data[section], keywords)
                 if result:
                     return result
