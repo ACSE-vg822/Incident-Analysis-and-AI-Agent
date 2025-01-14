@@ -14,9 +14,9 @@ from graph_data_extractor import GraphDataExtractor
 from incident_report_overview import IncidentReportOverview
 
 def main():
-    # Sidebar navigation
-    menu = ["Dashboard", "Chatbot", "Graph", "Incident Overview"]
-    choice = st.sidebar.selectbox("Menu", menu)
+    # Sidebar navigation with radio buttons
+    menu = ["Dashboard", "Chatbot", "Related Incidents", "Incident Overview"]
+    choice = st.sidebar.radio("Menu", menu)
 
     if choice == "Dashboard":
         # Dashboard title
@@ -35,8 +35,8 @@ def main():
         dashboard.render_all()
     
     elif choice == "Chatbot":
-        # Chatbot title
-        st.title("AI Chatbot: Dataset Analysis Assistant")
+        # Risk evaluation title
+        st.title("AI Chatbot: Risk Evaluation Assistant")
         
         # Load data for chatbot context
         data_loader = DataLoader()
@@ -51,7 +51,7 @@ def main():
             st.write("**Chatbot's Response:**")
             st.write(answer)
 
-    elif choice == "Graph":
+    elif choice == "Related Incidents":
         st.title("Interactive Service and Component Correlation Graph")
         
         # Load the parsed incident data
@@ -67,7 +67,7 @@ def main():
         graph_renderer.graph_ui()
 
     elif choice == "Incident Overview":
-        #st.title("Incident Overview")
+        # st.title("Incident Report Overview")
         # Render the incident report overview page
         overview = IncidentReportOverview()
         overview.render()
