@@ -7,3 +7,6 @@ python-dotenv # For managing API keys and environment variables
 # for plotting and visualization
 matplotlib 
 plotly
+networkx 
+pyvis
+streamlit-aggrid
