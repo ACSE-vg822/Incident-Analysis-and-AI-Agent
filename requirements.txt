@@ -1,0 +1,9 @@
+pandas # For structured data handling
+numpy # Dependency for pandas
+regex # For parsing and text matching
+openai # For ChatGPT API integration
+streamlit # For building interactive dashboards
+python-dotenv # For managing API keys and environment variables
+# for plotting and visualization
+matplotlib 
+plotly
