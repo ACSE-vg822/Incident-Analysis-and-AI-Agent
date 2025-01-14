@@ -1,49 +1,46 @@
 import streamlit as st
-import pandas as pd
 import sys
 import os
 
 # Add utilities directory to system path for imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'utilities')))
 
-from visualizations import DashboardRenderer 
+from visualizations import DashboardRenderer
 from chatbot import Chatbot
-
-@st.cache_data
-def load_data():
-    """Load the parsed incident reports data."""
-    # Dynamically construct the file path
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(base_dir, "parsed_data", "parsed_incident_reports.csv")
-
-    return pd.read_csv(file_path)
-
-def preprocess_data(data):
-    """Preprocess the dataset to extract and format date information."""
-    # Ensure Date column is in datetime format
-    data['Date'] = pd.to_datetime(data['Date'], errors='coerce')
-    # Extract year and month as a string (instead of Period)
-    data['YearMonth'] = data['Date'].dt.to_period('M').astype(str)
-    return data
+from data_handler import DataLoader, DataPreprocessor
 
 def main():
-    st.title("Wikimedia Incident Analysis Dashboard")
-
-    # Load and preprocess data
-    data = load_data()
-    data = preprocess_data(data)
-
     # Sidebar navigation
     menu = ["Dashboard", "Chatbot"]
     choice = st.sidebar.selectbox("Menu", menu)
 
     if choice == "Dashboard":
+        # Dashboard title
+        st.title("Wikimedia Incident Analysis Dashboard")
+        
+        # Load data
+        data_loader = DataLoader()
+        data = data_loader.load_data()
+
+        # Preprocess data
+        preprocessor = DataPreprocessor()
+        data = preprocessor.preprocess(data)
+
+        # Render the dashboard
         dashboard = DashboardRenderer(data)
         dashboard.render_all()
+    
     elif choice == "Chatbot":
-        st.subheader("AI Chatbot: Ask Questions About the Dataset")
+        # Chatbot title
+        st.title("AI Chatbot: Dataset Analysis Assistant")
+        
+        # Load data for chatbot context
+        data_loader = DataLoader()
+        data = data_loader.load_data()
+        
         chatbot = Chatbot()  # Initialize the Chatbot class
-        question = st.text_input("Ask a question about the dataset:")
+        st.subheader("Ask Questions About the Dataset")
+        question = st.text_input("e.g. Tell me what the dataset is about")
         if question:
             context = chatbot.generate_context(data)
             answer = chatbot.ask(question, context)
