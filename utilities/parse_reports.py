@@ -153,11 +153,22 @@ def parse_all_reports(directory):
 
 def main():
     """Main function to execute the script."""
-    directory = "assignment_data/"  # Adjust to your directory path
-    output_file = "parsed_incident_reports.csv"
+    #directory = "assignment_data/"  # Adjust to your directory path
+    #output_file = "parsed_data/parsed_incident_reports.csv"
+    # Get the directory of the current script
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Construct paths relative to the script's location
+    input_directory = os.path.join(base_dir, "..", "assignment_data")
+    output_file = os.path.join(base_dir, "..", "parsed_data", "parsed_incident_reports.csv")
+    
+    # Check if input directory exists
+    if not os.path.exists(input_directory):
+        print(f"Error: Directory '{input_directory}' does not exist.")
+        return
     
     print("Parsing reports...")
-    df = parse_all_reports(directory)
+    df = parse_all_reports(input_directory)
     
     if df.empty:
         print("No data was parsed. Check the input files and directory path.")

@@ -1,12 +1,18 @@
 import streamlit as st
 import pandas as pd
+
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'utilities')))
+
 from visualizations import render_dashboard
 from chatbot import ask_gpt, get_dataset_context
+
 
 @st.cache_data
 def load_data():
     """Load the parsed incident reports data."""
-    return pd.read_csv("parsed_incident_reports.csv")
+    return pd.read_csv("parsed_data\parsed_incident_reports.csv")
 
 def preprocess_data(data):
     """Preprocess the dataset to extract and format date information."""
