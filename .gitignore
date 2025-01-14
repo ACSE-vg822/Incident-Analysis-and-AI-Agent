@@ -1,2 +1,3 @@
 # Ignore the .streamlit folder and its contents
 .streamlit/
+__pycache__
