@@ -12,7 +12,11 @@ from chatbot import ask_gpt, get_dataset_context
 @st.cache_data
 def load_data():
     """Load the parsed incident reports data."""
-    return pd.read_csv("parsed_data\parsed_incident_reports.csv")
+    # Dynamically construct the file path
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(base_dir, "parsed_data", "parsed_incident_reports.csv")
+
+    return pd.read_csv(file_path)
 
 def preprocess_data(data):
     """Preprocess the dataset to extract and format date information."""
