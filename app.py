@@ -1,13 +1,13 @@
 import streamlit as st
 import pandas as pd
-
 import sys
 import os
+
+# Add utilities directory to system path for imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'utilities')))
 
-from visualizations import render_dashboard
-from chatbot import ask_gpt, get_dataset_context
-
+from visualizations import DashboardRenderer 
+from chatbot import Chatbot
 
 @st.cache_data
 def load_data():
@@ -38,16 +38,17 @@ def main():
     choice = st.sidebar.selectbox("Menu", menu)
 
     if choice == "Dashboard":
-        render_dashboard(data)
+        dashboard = DashboardRenderer(data)
+        dashboard.render_all()
     elif choice == "Chatbot":
         st.subheader("AI Chatbot: Ask Questions About the Dataset")
+        chatbot = Chatbot()  # Initialize the Chatbot class
         question = st.text_input("Ask a question about the dataset:")
         if question:
-            context = get_dataset_context(data)
-            answer = ask_gpt(question, context)
+            context = chatbot.generate_context(data)
+            answer = chatbot.ask(question, context)
             st.write("**Chatbot's Response:**")
             st.write(answer)
-
 
 if __name__ == "__main__":
     main()

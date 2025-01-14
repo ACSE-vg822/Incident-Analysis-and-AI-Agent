@@ -2,181 +2,137 @@ import os
 import re
 import pandas as pd
 
-# Define sections to extract
-SECTIONS = ['Summary', 'Impact', 'Detection', 'Timeline', 'Conclusions', 'Actionables']
+class ReportParser:
+    """Class to handle parsing and saving incident reports."""
 
-def parse_report(report, filename):
-    """Extract structured data from a single Wikitext report."""
-    data = {section: None for section in SECTIONS}  # Default to None for missing sections
-    for section in SECTIONS:
-        match = re.search(rf"=+\s*{section}\s*=+\s*(.*?)(?=\n=+|$)", report, re.S)
-        if match:
-            data[section] = match.group(1).strip()
-            print(f"Section '{section}' found.")
+    SECTIONS = ['Summary', 'Impact', 'Detection', 'Timeline', 'Conclusions', 'Actionables']
+
+    def __init__(self, input_dir="assignment_data", output_dir="parsed_data"):
+        # Set up paths relative to the current script
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        self.input_dir = os.path.join(base_dir, "..", input_dir)
+        self.output_file = os.path.join(base_dir, "..", output_dir, "parsed_incident_reports.csv")
+        
+        # Ensure output directory exists
+        os.makedirs(os.path.dirname(self.output_file), exist_ok=True)
+
+    def parse_report(self, report, filename):
+        """Extract structured data from a single Wikitext report."""
+        data = {section: None for section in self.SECTIONS}  # Default to None for missing sections
+        for section in self.SECTIONS:
+            match = re.search(rf"=+\s*{section}\s*=+\s*(.*?)(?=\n=+|$)", report, re.S)
+            data[section] = match.group(1).strip() if match else None
+        
+        data['Date'] = self.extract_date_from_filename(filename)
+        data['Component'] = self.extract_component(data['Impact'])
+        data['Symptom'] = self.extract_symptom(data['Impact'], data['Detection'])
+        data['Service'] = self.extract_service(data['Impact'], data['Detection'])
+        data['UserImpact'] = self.extract_user_impact(data)
+        data['RootCauseCategory'] = self.extract_root_cause(data)
+        data['Filename'] = filename
+
+        return data
+
+    def parse_all_reports(self):
+        """Parse all Wikitext files in the input directory."""
+        all_reports = []
+        if not os.path.exists(self.input_dir):
+            print(f"Error: Directory '{self.input_dir}' does not exist.")
+            return pd.DataFrame()
+
+        for filename in os.listdir(self.input_dir):
+            if filename.endswith(".wikitext"):
+                filepath = os.path.join(self.input_dir, filename)
+                print(f"Processing file: {filepath}")
+                try:
+                    with open(filepath, "r", encoding="utf-8") as file:
+                        report = file.read()
+                        parsed_data = self.parse_report(report, filename)
+                        all_reports.append(parsed_data)
+                except Exception as e:
+                    print(f"Error reading file '{filename}': {e}")
+
+        return pd.DataFrame(all_reports)
+
+    def extract_component(self, impact):
+        """Extract component from Impact section."""
+        keywords = ['network', 'database', 'storage', 'kubernetes', 'load balancer',
+                    'api', 'dns', 'cache', 'server', 'auth', 'filesystem', 'MediaWiki',
+                    'caching', 'search', 'job queues & messaging', 'development tools' ]
+        
+        return self._extract_keyword(impact, keywords)
+
+    def extract_symptom(self, impact, detection):
+        """Extract symptom from Impact or Detection sections."""
+        keywords = ['high latency', 'error rates', 'timeouts', 'service unavailable',
+                    'failed connections', 'slow response', 'memory leaks', 'cpu spikes',
+                    'disk usage', 'traffic surge', 'authentication failure', 'request drop', 
+                    'service availability', 'user reports', 'database issues', 'monitoring', 'applications errors']
+        
+        return self._extract_keyword(impact or detection, keywords)
+
+    def extract_service(self, impact, detection):
+        """Extract service from Impact or Detection sections."""
+        keywords = ['mediawiki', 'storage', 'networking', 'caching', 'api', 'cdn',
+                    'search', 'database', 'analytics', 'logging', 'authentication', 
+                    'wikidata', 'query services', 'cdn']
+        
+        return self._extract_keyword(impact or detection, keywords)
+
+    def extract_user_impact(self, data):
+        """Extract user impact from various sections."""
+        for section in ['Impact', 'Detection', 'Summary']:
+            if data.get(section):
+                keywords = ['service disruption', 'downtime', 'error messages', 'slow performance',
+                            'data loss', 'unresponsive', 'service unavailable', 'authentication failure']
+                result = self._extract_keyword(data[section], keywords)
+                if result:
+                    return result
+        return 'Unknown'
+
+    def extract_root_cause(self, data):
+        """Extract root cause category."""
+        for section in ['Conclusions', 'Impact']:
+            if data.get(section):
+                keywords = ['API overload','database errors','monitoring failure','network issues','provider outage','load balancing',
+                            'configuration issues', 'network issue', 'database failure', 'traffic surge',
+                            'software bug', 'resource exhaustion', 'authentication error', 
+                            'hardware failure', 'security breach', 'cache miss', 'software bugs' , 'storage issues',
+                            'hardware failures']
+                result = self._extract_keyword(data[section], keywords)
+                if result:
+                    return result
+        return 'Unknown'
+
+    def extract_date_from_filename(self, filename):
+        """Extract date from the filename."""
+        match = re.match(r'(\d{4}-\d{2}-\d{2})', filename)
+        return match.group(1) if match else None
+
+    def _extract_keyword(self, text, keywords):
+        """Utility to extract a keyword from text."""
+        if text:
+            for keyword in keywords:
+                if re.search(rf'\b{keyword}\w*', text, re.I):
+                    return keyword.capitalize()
+        return 'Unknown'
+
+    def save_to_csv(self, dataframe):
+        """Save parsed data to a CSV file."""
+        if dataframe.empty:
+            print("No data to save. Check input files and directory path.")
         else:
-            print(f"Section '{section}' not found in this report.")
-    
-    # Extract date from filename
-    data['Date'] = extract_date_from_filename(filename)
+            dataframe.to_csv(self.output_file, index=False)
+            print(f"Parsing complete! Data saved to {self.output_file}")
 
-    # Extract component from Impact section
-    if data['Impact']:
-        data['Component'] = extract_component_from_impact(data['Impact'])
-    else:
-        data['Component'] = 'Unknown'
+    def run(self):
+        """Execute the full parsing workflow."""
+        print("Parsing reports...")
+        df = self.parse_all_reports()
+        self.save_to_csv(df)
 
-    # Extract symptom from Impact or Detection sections
-    if data['Impact']:
-        data['Symptom'] = extract_symptom_from_impact_or_detection(data['Impact'])
-    elif data['Detection']:
-        data['Symptom'] = extract_symptom_from_impact_or_detection(data['Detection'])
-    else:
-        data['Symptom'] = 'Unknown'
 
-    # Extract service from Impact or Detection sections
-    if data['Impact']:
-        data['Service'] = extract_service_from_impact_or_detection(data['Impact'])
-    elif data['Detection']:
-        data['Service'] = extract_service_from_impact_or_detection(data['Detection'])
-    else:
-        data['Service'] = 'Unknown'
-
-    # Extract user impact from Impact, Detection, or Summary sections
-    if data['Impact']:
-        data['UserImpact'] = extract_user_impact(data['Impact'])
-    elif data['Detection']:
-        data['UserImpact'] = extract_user_impact(data['Detection'])
-    elif data['Summary']:
-        data['UserImpact'] = extract_user_impact(data['Summary'])
-    else:
-        data['UserImpact'] = 'Unknown'
-
-    # Extract root cause category from Conclusions or Impact sections
-    if data['Conclusions']:
-        data['RootCauseCategory'] = extract_root_cause_category(data['Conclusions'])
-    elif data['Impact']:
-        data['RootCauseCategory'] = extract_root_cause_category(data['Impact'])
-    else:
-        data['RootCauseCategory'] = 'Unknown'
-
-    return data
-
-def extract_component_from_impact(impact_text):
-    """Extract component or root cause from the Impact section."""
-    component_keywords = [
-        'network', 'database', 'storage', 'kubernetes', 'load balancer',
-        'api', 'dns', 'cache', 'server', 'auth', 'filesystem', 'MediaWiki',
-        'caching', 'search', 'job queues & messaging', 'development tools' 
-    ]
-    for keyword in component_keywords:
-        if re.search(rf'\b{keyword}\w*', impact_text, re.I):  # Allow partial matches
-            return keyword.capitalize()
-    return 'Unknown'
-
-def extract_symptom_from_impact_or_detection(text):
-    """Extract symptom information from the Impact or Detection section."""
-    symptom_keywords = [
-        'high latency', 'error rates', 'timeouts', 'service unavailable',
-        'failed connections', 'slow response', 'memory leaks', 'cpu spikes',
-        'disk usage', 'traffic surge', 'authentication failure', 'request drop', 
-        'service availability', 'user reports', 'database issues', 'monitoring', 'applications errors'
-    ]
-    for keyword in symptom_keywords:
-        if re.search(rf'\b{keyword}\w*', text, re.I):  # Allow partial matches
-            return keyword.capitalize()
-    return 'Unknown'
-
-def extract_service_from_impact_or_detection(text):
-    """Extract service information from the Impact or Detection section."""
-    service_keywords = [
-        'mediawiki', 'storage', 'networking', 'caching', 'api', 'cdn',
-        'search', 'database', 'analytics', 'logging', 'authentication', 
-        'wikidata', 'query services', 'cdn'
-    ]
-    for keyword in service_keywords:
-        if re.search(rf'\b{keyword}\w*', text, re.I):  # Allow partial matches
-            return keyword.capitalize()
-    return 'Unknown'
-
-def extract_user_impact(text):
-    """Extract user impact information from relevant sections."""
-    user_impact_keywords = [
-        'service disruption', 'downtime', 'error messages', 'slow performance',
-        'data loss', 'unresponsive', 'service unavailable', 'authentication failure'
-    ]
-    for keyword in user_impact_keywords:
-        if re.search(rf'\b{keyword}\w*', text, re.I):  # Allow partial matches
-            return keyword.capitalize()
-    return 'Unknown'
-
-def extract_date_from_filename(filename):
-    """Extract date from filename."""
-    date_match = re.match(r'(\d{4}-\d{2}-\d{2})', filename)
-    if date_match:
-        return date_match.group(1)
-    return None
-
-def extract_root_cause_category(text):
-    """Extract root cause category from relevant sections."""
-    root_cause_keywords = [
-        'configuration errors', 'network issue', 'database failure', 'traffic surge',
-        'software bug', 'resource exhaustion', 'authentication error', 
-        'hardware failure', 'security breach', 'cache miss', 'software bugs' , 'storage issues',
-        'hardware failures'
-    ]
-    for keyword in root_cause_keywords:
-        if re.search(rf'\b{keyword}\w*', text, re.I):  # Allow partial matches
-            return keyword.capitalize()
-    return 'Unknown'  # Default if no root cause is found
-
-def parse_all_reports(directory):
-    """Parse all Wikitext files in a given directory."""
-    all_reports = []
-    if not os.path.exists(directory):
-        print(f"Error: Directory '{directory}' does not exist.")
-        return pd.DataFrame()
-
-    for filename in os.listdir(directory):
-        if filename.endswith(".wikitext"):
-            filepath = os.path.join(directory, filename)
-            print(f"Processing file: {filepath}")
-            try:
-                with open(filepath, "r", encoding="utf-8") as file:
-                    report = file.read()
-                    parsed_data = parse_report(report, filename)
-                    parsed_data['Filename'] = filename
-                    all_reports.append(parsed_data)
-            except Exception as e:
-                print(f"Error reading file '{filename}': {e}")
-    
-    return pd.DataFrame(all_reports)
-
-def main():
-    """Main function to execute the script."""
-    #directory = "assignment_data/"  # Adjust to your directory path
-    #output_file = "parsed_data/parsed_incident_reports.csv"
-    # Get the directory of the current script
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    
-    # Construct paths relative to the script's location
-    input_directory = os.path.join(base_dir, "..", "assignment_data")
-    output_file = os.path.join(base_dir, "..", "parsed_data", "parsed_incident_reports.csv")
-    
-    # Check if input directory exists
-    if not os.path.exists(input_directory):
-        print(f"Error: Directory '{input_directory}' does not exist.")
-        return
-    
-    print("Parsing reports...")
-    df = parse_all_reports(input_directory)
-    
-    if df.empty:
-        print("No data was parsed. Check the input files and directory path.")
-    else:
-        print("Saving parsed data to CSV...")
-        df.to_csv(output_file, index=False)
-        print(f"Parsing complete! Data saved to {output_file}")
-
-# Run the script only if executed directly
+# Run the script if executed directly
 if __name__ == "__main__":
-    main()
+    parser = ReportParser()
+    parser.run()
