@@ -10,11 +10,12 @@ from visualizations import DashboardRenderer
 from chatbot import Chatbot
 from data_handler import DataLoader, DataPreprocessor
 from graph_renderer import GraphRenderer
-from graph_data_extractor import GraphDataExtractor  # Import the new class
+from graph_data_extractor import GraphDataExtractor  
+from incident_report_overview import IncidentReportOverview
 
 def main():
     # Sidebar navigation
-    menu = ["Dashboard", "Chatbot", "Graph"]
+    menu = ["Dashboard", "Chatbot", "Graph", "Incident Overview"]
     choice = st.sidebar.selectbox("Menu", menu)
 
     if choice == "Dashboard":
@@ -64,6 +65,12 @@ def main():
         # Render the graph using the extracted data
         graph_renderer = GraphRenderer(graph_data)
         graph_renderer.graph_ui()
+
+    elif choice == "Incident Overview":
+        #st.title("Incident Overview")
+        # Render the incident report overview page
+        overview = IncidentReportOverview()
+        overview.render()
 
 if __name__ == "__main__":
     main()
