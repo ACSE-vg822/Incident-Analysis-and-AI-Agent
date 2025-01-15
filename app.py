@@ -37,22 +37,6 @@ def main():
         dashboard = DashboardRenderer(data)
         dashboard.render_all()
     
-    # elif choice == "Chatbot":
-    #     # Risk evaluation title
-    #     st.title("AI Chatbot: Risk Evaluation Assistant")
-        
-    #     # Load data for chatbot context
-    #     data_loader = DataLoader()
-    #     data = data_loader.load_data()
-        
-    #     chatbot = Chatbot()  # Initialize the Chatbot class
-    #     st.subheader("Ask Questions About the Dataset")
-    #     question = st.text_input("e.g. Tell me what the dataset is about")
-    #     if question:
-    #         context = chatbot.generate_context(data)
-    #         answer = chatbot.ask(question, context)
-    #         st.write("**Chatbot's Response:**")
-    #         st.write(answer)
     elif choice == "Chatbot":
         # Risk evaluation title
         st.title("AI Chatbot: Risk Evaluation Assistant")
@@ -64,7 +48,7 @@ def main():
         # Preprocess the data to add YearMonth
         preprocessor = DataPreprocessor()
         data = preprocessor.preprocess(data)
-        
+
         # Initialize RAG components
         api_key = st.secrets["general"]["OPENAI_API_KEY"]
         retriever = DataRetriever(api_key=api_key)
@@ -106,7 +90,6 @@ def main():
         graph_renderer.graph_ui()
 
     elif choice == "Incident Overview":
-        # st.title("Incident Report Overview")
         # Render the incident report overview page
         overview = IncidentReportOverview()
         overview.render()
