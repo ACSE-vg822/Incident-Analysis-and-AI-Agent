@@ -61,33 +61,34 @@ def main():
         data_loader = DataLoader()
         data = data_loader.load_data()
         
+        # Preprocess the data to add YearMonth
+        preprocessor = DataPreprocessor()
+        data = preprocessor.preprocess(data)
+        
         # Initialize RAG components
-        # Retrieve API key from secrets
         api_key = st.secrets["general"]["OPENAI_API_KEY"]
         retriever = DataRetriever(api_key=api_key)
         chatbot = Chatbot(api_key=api_key)
-        
+
         # Chatbot interface
         st.subheader("Ask Questions About the Dataset")
         question = st.text_input("Enter your question:")
-    
-        if question:
-            # Retrieve relevant context
-            context_records = retriever.retrieve(question, data)
-            # print("Retrieved Records:", context_records)
 
+        if question:
+            # Retrieve relevant context for RAG-based response
+            context_records = retriever.retrieve(question, data, top_k=10)
             context = "\n".join([record['incident_description'] for record in context_records])
-            
-            # Display retrieved context
-            # st.subheader("Retrieved Context")
-            # st.write(context)
-            
-            # Generate response using the retrieved context
-            response = chatbot.generate_response(question, context)
-            
-            # Display the chatbot's response
-            st.subheader("Chatbot's Response")
-            st.write(response)
+
+            # Handle query
+            result = chatbot.handle_query(question, data, context)
+
+            # Display result
+            if isinstance(result, str):  # Text response
+                st.subheader("Chatbot's Response")
+                st.write(result)
+            else:  # Visualization
+                st.plotly_chart(result)
+
 
     elif choice == "Related Incidents":
         st.title("Interactive Service and Component Correlation Graph")
