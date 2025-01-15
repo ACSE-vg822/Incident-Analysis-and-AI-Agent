@@ -10,3 +10,6 @@ plotly
 networkx 
 pyvis
 streamlit-aggrid
+sentence-transformers
+faiss-cpu
+

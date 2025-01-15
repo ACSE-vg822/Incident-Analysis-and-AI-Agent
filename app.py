@@ -5,6 +5,8 @@ import pandas as pd
 
 # Add utilities directory to system path for imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'utilities')))
+# Set the working directory to the project root
+os.chdir(os.path.dirname(__file__))
 
 from visualizations import DashboardRenderer
 from chatbot import Chatbot
@@ -12,6 +14,7 @@ from data_handler import DataLoader, DataPreprocessor
 from graph_renderer import GraphRenderer
 from graph_data_extractor import GraphDataExtractor  
 from incident_report_overview import IncidentReportOverview
+from data_retriever import DataRetriever
 
 def main():
     # Sidebar navigation with radio buttons
@@ -34,6 +37,22 @@ def main():
         dashboard = DashboardRenderer(data)
         dashboard.render_all()
     
+    # elif choice == "Chatbot":
+    #     # Risk evaluation title
+    #     st.title("AI Chatbot: Risk Evaluation Assistant")
+        
+    #     # Load data for chatbot context
+    #     data_loader = DataLoader()
+    #     data = data_loader.load_data()
+        
+    #     chatbot = Chatbot()  # Initialize the Chatbot class
+    #     st.subheader("Ask Questions About the Dataset")
+    #     question = st.text_input("e.g. Tell me what the dataset is about")
+    #     if question:
+    #         context = chatbot.generate_context(data)
+    #         answer = chatbot.ask(question, context)
+    #         st.write("**Chatbot's Response:**")
+    #         st.write(answer)
     elif choice == "Chatbot":
         # Risk evaluation title
         st.title("AI Chatbot: Risk Evaluation Assistant")
@@ -42,14 +61,33 @@ def main():
         data_loader = DataLoader()
         data = data_loader.load_data()
         
-        chatbot = Chatbot()  # Initialize the Chatbot class
+        # Initialize RAG components
+        # Retrieve API key from secrets
+        api_key = st.secrets["general"]["OPENAI_API_KEY"]
+        retriever = DataRetriever(api_key=api_key)
+        chatbot = Chatbot(api_key=api_key)
+        
+        # Chatbot interface
         st.subheader("Ask Questions About the Dataset")
-        question = st.text_input("e.g. Tell me what the dataset is about")
+        question = st.text_input("Enter your question:")
+    
         if question:
-            context = chatbot.generate_context(data)
-            answer = chatbot.ask(question, context)
-            st.write("**Chatbot's Response:**")
-            st.write(answer)
+            # Retrieve relevant context
+            context_records = retriever.retrieve(question, data)
+            # print("Retrieved Records:", context_records)
+
+            context = "\n".join([record['incident_description'] for record in context_records])
+            
+            # Display retrieved context
+            # st.subheader("Retrieved Context")
+            # st.write(context)
+            
+            # Generate response using the retrieved context
+            response = chatbot.generate_response(question, context)
+            
+            # Display the chatbot's response
+            st.subheader("Chatbot's Response")
+            st.write(response)
 
     elif choice == "Related Incidents":
         st.title("Interactive Service and Component Correlation Graph")
